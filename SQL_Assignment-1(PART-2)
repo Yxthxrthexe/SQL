@@ -1,0 +1,129 @@
+create Table CANDIDATE
+(
+    CID number (3) constraint pk_Cid primary key,
+    CNAME varchar2(20) constraint nn_Nme not null,
+    CADDRESS varchar2(50) constraint nn_Add not null,
+    CBIRTH_DT date
+)
+
+create Table TEST 
+(
+TID number (3) constraint pk_Tid primary key,
+TNAME varchar2(20) constraint nn_Name not null,
+TOT_MRKS number(3) constraint ck_Totmrks check(TOT_MRKS>0),
+PASS_MRKS number(3) constraint ck_Passmrks check(PASS_MRKS>0)
+)
+
+create Table TEST_CENTRE 
+(
+TCID number (3) constraint pk_Tcid primary key,
+LOCATION varchar2(20) constraint nn_LOC not null,
+MGR varchar2(20) constraint nn_Mgr not null,
+CAPICITY number(3) constraint ck_Capicity check(CAPICITY>0)
+)
+
+create Table TEST_TAKEN
+(
+  CID number(3) ,
+  TID number(3) ,
+  TCID number(3) ,
+  constraint pk_test_taken primary key (CID,TID,TCID),
+  constraint fk_cID foreign key(CID)  references CANDIDATE(CID),
+  constraint fk_tID foreign key (TID) references TEST(TID),
+  constraint fk_tcID foreign key (TCID) references TEST_CENTRE(TCID),
+  TEST_DT date,
+  SCORE number(3)
+)
+
+insert into CANDIDATE values(11,'PETER','Banglore', '09-Feb-2001')
+
+insert into CANDIDATE values(12,'RAHUL','Nizampura, Vadodara', '29-Jan-1999')
+
+insert into CANDIDATE values(13,'SHIVAM','RICKY ROAD', '12-Oct-2003')
+
+insert into CANDIDATE values(14,'SATISH','KALAGHODA CIRCLE', '19-May-2003')
+
+insert into CANDIDATE values(15,'AVINASH','CHHANI', '19-Jun-2004')
+
+insert into CANDIDATE values(16,'ZABIYA','SURAT', '1-Oct-1979')
+
+insert into TEST values(1,'MATHS',100, 33)
+
+insert into TEST values(2,'PHYSICS',100, 33)
+
+insert into TEST values(3,'FUNDAMENTAL ORACLE',100, 33)
+
+
+insert into TEST values(4,'SCIENCE',100, 33)
+
+
+
+insert into TEST_CENTRE values(21,'BANGLORE','RESEARCH',33)
+
+insert into TEST_CENTRE values(22,'VALSAD','JOB',45 )
+
+insert into TEST_CENTRE values(23,'VADODARA','SUPERVISOR',31 )
+
+
+insert into TEST_TAKEN values (11,1,21,'21-Feb-2004',46)
+
+insert into TEST_TAKEN values (12,3,24,'28-Feb-2004',25)
+
+insert into TEST_TAKEN values (13,3,24,'21-Feb-2004',29)
+
+insert into TEST_TAKEN values (14,3,24,'19-Feb-2004',41)
+
+insert into TEST_TAKEN values (14,2,23,'3-Mar-2004',56)
+
+insert into TEST_TAKEN values (11,2,23,'3-Apr-2004',61)
+
+insert into TEST_TAKEN values (12,4,24,'29-Mar-2004',24)
+
+insert into TEST_TAKEN values (15,1,21,'24-Feb-2004',46)
+
+insert into TEST_TAKEN values (13,1,21,'15-Feb-2004',46)
+
+
+select * from TEST
+where TID in(select TID from TEST_TAKEN
+            where TEST_DT between '02-Mar-2004' and '23-Apr-2004')
+
+
+select TID,TCID,count(CID) from TEST_TAKEN
+where TID in(select distinct(TID) from TEST)
+and
+TCID in(select distinct (TCID) from TEST_CENTRE)
+group by TID,TCID;
+
+select *from CANDIDATE
+where CID in(select CID from TEST_TAKEN where SCORE in(select SCORE from TEST_TAKEN where CID=11) and TID in(select TID from TEST_CENTRE where LOCATION='BANGLORE'))
+
+SELECT *
+FROM TEST_CENTRE
+WHERE TCID NOT IN (
+SELECT TCID
+FROM TEST_TAKEN
+);
+
+
+select *
+From CANDIDATE
+where CID in(select CID from TEST_TAKEN
+             where SCORE< 33);
+
+
+SELECT CID,TID,COUNT(CID)
+FROM TEST_TAKEN
+where TID in(select TID from TEST
+             where TNAME='FUNDAMENTAL ORACLE' and TID=24)
+group by CID,TID;
+
+
+SELECT C.*, TT.TID, TT.TEST_DT
+FROM CANDIDATE C
+JOIN TEST_TAKEN TT ON C.CID = TT.CID
+WHERE MONTH(C.CBIRTH_DT
+
+
+
+

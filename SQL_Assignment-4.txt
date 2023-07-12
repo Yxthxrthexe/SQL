@@ -1,0 +1,127 @@
+#Q-1
+
+create table BONUS (
+    empno number(2) ,
+    sal number(12 , 2),
+    bonus_amt number(8,2),
+    constraint pk_empn primary key (empno),
+    constraint fk_bonus foreign key (empno) references emp(empno)
+)
+
+
+declare
+cursor c1 is select empno,sal,comm from emp;
+bonus_amt emp.sal %type;
+r1 c1 %rowtype;
+begin
+open c1;
+loop
+    fetch c1 into r1;
+    exit when c1 % notfound;
+  if((r1.sal+nvl(r1.comm,0))<5000) then bonus_amt :=r1.sal *0.1;
+  else
+      	if(r1.sal + nvl(r1.comm,0)>7000) then bonus_amt:=r1.sal*0.12;
+		end if;
+		bonus_amt:=bonus_amt+500;
+	end if;
+
+r1.sal:=r1.sal+bonus_amt;
+insert into BONUS values (r1.empno, r1.sal,bonus_amt);
+update emp set sal=r1.sal+bonus_amt where empno=r1.empno;
+commit;
+end loop;
+close c1;
+end;
+
+#Q-2
+
+create table PART_MASTER (  
+    P# number(5) constraint pk_ppt primary key,  
+    PNAME varchar2(10) constraint pNme_noname not NULL,  
+    PRICE number(8,2) ,  
+    TOT_QTY number(5),  
+    REORDER_LEVEL number(5)  
+)
+
+create table PART_TRANS (   
+    O# number(5),   
+    P# number(5),   
+    QTY_REQ number(5),   
+     constraint pk_pt primary key (O#,P#),   
+    constraint fk_pt foreign key (P#) references PART_MASTER(P#)   
+)
+
+drop table PART_MASTER
+
+create table TEMP(  
+    P# number(5),  
+    QTY number(5),  
+     constraint fk_ptd foreign key (P#) references PART_MASTER(P#)   
+)
+
+
+
+DECLARE
+    cursor c1 is select *from PART_TRANS;
+    tot_qt PART_MASTER.TOT_QTY%TYPE;
+    reodr PART_MASTER.REORDER_LEVEL %type; 
+    r1 c1 %rowtype; 
+BEGIN
+    
+    for r1 in c1 loop 
+        select TOT_QTY into tot_qt from PART_MASTER where P#=r1.P#; 
+        select REORDER_LEVEL into reodr from PART_MASTER where P#=r1.P#;
+
+        if tot_qt - r1.QTY_REQ < reodr then
+            insert into TEMP  VALUES (r1.P#, r1.QTY_REQ);
+            DBMS_OUTPUT.PUT_LINE('Part ' || r1.P# || ' cannot be issued due to low quantity.');
+        else
+            UPDATE PART_MASTER SET TOT_QTY = tot_qt - r1.QTY_REQ WHERE P# = r1.P#;
+            DBMS_OUTPUT.PUT_LINE('Part ' || r1.P# || ' has been issued.');
+        END IF;
+    END LOOP;
+    
+END;
+
+
+#Q-3
+
+create table ISSUE( 
+    ROLLNO number(3) constraint pk_rn primary key, 
+    BOOKNO number(3), 
+    ISSUE_DATE date, 
+    RETURN_DATE date 
+) 
+
+create TABLE FINE( 
+    ROLLNO number(3) constraint pk_ptm primary key, 
+    AMOUNT_PY number(3),    
+    constraint fk_ptx foreign key (ROLLNO) references ISSUE(ROLLNO)   
+)
+
+
+declare
+cursor c1 is select * from ISSUE;
+amt_py FINE.AMOUNT_PY%TYPE;
+r1 c1%rowtype;
+begin
+for r1 in c1 loop
+select AMOUNT_PY into amt_py from FINE where ROLLNO = r1.ROLLNO;
+if ( (r1.RETURN_DATE - r1.ISSUE_DATE) > 15 and (r1.RETURN_DATE - r1.ISSUE_DATE) < 22 )
+then
+amt_py := 0.5 * (r1.RETURN_DATE - r1.ISSUE_DATE);
+insert into FINE  values (r1.ROLLNO, amt_py);
+elsif ( (r1.RETURN_DATE - r1.ISSUE_DATE) > 22 and (r1.RETURN_DATE - r1.ISSUE_DATE) < 30 )
+then
+amt_py := 1 * (r1.RETURN_DATE - r1.ISSUE_DATE);
+insert into FINE  values (r1.ROLLNO, amt_py);
+elsif ( (r1.RETURN_DATE - r1.ISSUE_DATE) > 30 )
+then
+amt_py := 1.5 * (r1.RETURN_DATE - r1.ISSUE_DATE);
+insert into FINE  values (r1.ROLLNO, amt_py);
+end if;
+end loop;
+end;
+
+
+

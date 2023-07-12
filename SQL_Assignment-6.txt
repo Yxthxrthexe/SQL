@@ -1,0 +1,230 @@
+#Q1:
+create table DEPT ( 
+    DNAME varchar2(11) constraint nn_noNme not NULL, 
+    DEPTNO number(3) constraint pk_dept primary key, 
+    LOC varchar2(11) 
+)
+
+create table EMP ( 
+    ENAME varchar2(11) constraint nn_Nme not NULL, 
+    EMPNO number(3) constraint pk_empn primary key, 
+    JOB varchar2(11), 
+    MGR number(4), 
+    HIREDATE date, 
+    SAL number(6), 
+    COMM number(5), 
+    DEPTNO number(3), 
+    constraint fk_deptn foreign key (DEPTNO) references DEPT(DEPTNO) 
+) 
+
+create or replace function findloc(DEPTM in number) 
+return varchar2 
+is 
+LOCATION varchar2(15); 
+begin 
+  select LOC into LOCATION from DEPT where  DEPTNO=DEPTM; 
+return LOCATION; 
+Exception when  no_data_found then 
+    return 0; 
+ 
+end findloc;
+
+
+create or replace function findtotempnz (LOKI in varchar2, JOBB in varchar2) 
+  return number 
+is 
+total number(5); 
+ 
+begin  
+ select count(*) into total from EMP where 
+DEPTNO in(select DEPTNO from DEPT where upper(LOC)=upper(LOKI) and JOB=JOBB); 
+return total; 
+Exception when  no_data_found then dbms_output.put_line('NO EMPLOYEES FOUND!!'); 
+end findtotempnz;
+
+declare 
+  LOC2 varchar2(11); 
+  DEPT2 number(3):=20; 
+  TOTEMP number(6); 
+  JOBB varchar2(11):='MANAGER'; 
+begin  
+  LOC2:=findloc(DEPT2); 
+  dbms_output.put_line('THE DEPT. NO '|| DEPT2 || ' IS LOCATED IN ' || LOC2); 
+  if LOC2 in ('MUMBAI','BENGALURU') then  
+    TOTEMP:=findtotempnz(LOC2, JOBB); 
+   
+    dbms_output.put_line('TOTAL EMPLOYEES AT LOCATION '|| LOC2 || ' ARE ' || TOTEMP); 
+   
+  end if; 
+  Exception when  no_data_found then dbms_output.put_line('NO EMPLOYEES FOUND!!'); 
+end;  
+
+
+#Q-2
+
+create table DEPT ( 
+    DNAME varchar2(11) constraint nn_noNme not NULL, 
+    DEPTNO number(3) constraint pk_dept primary key, 
+    LOC varchar2(11) 
+)
+
+create table EMP ( 
+    ENAME varchar2(11) constraint nn_Nme not NULL, 
+    EMPNO number(3) constraint pk_empn primary key, 
+    JOB varchar2(11), 
+    MGR number(4), 
+    HIREDATE date, 
+    SAL number(6), 
+    COMM number(5), 
+    DEPTNO number(3), 
+    constraint fk_deptn foreign key (DEPTNO) references DEPT(DEPTNO) 
+) 
+
+
+
+create or replace procedure p1(
+    empno1 in number,
+    sal1 in out number,
+    comm1 in number,
+    deptno1 in number,
+    job1 in varchar2,
+    deptname1 out varchar2
+  ) 
+is
+  begin
+    select DNAME
+    into deptname1
+    from DEPT
+    where DEPTNO = deptno1;
+    
+    if sal1 > (comm1 * 0.1) AND job1 = 'MANAGER' THEN
+      sal1 := sal1 * 1.25;
+    end if;
+  end p1;
+
+
+declare
+    emp_no number(3);
+    sa_l   number(7);
+    co_mm  number(5);
+    dept_no number(3);
+    jo_b    varchar2(11);
+    dept_name  varchar2(11);
+
+begin
+  
+  emp_no := 11;
+  select SAL,COMM,DEPTNO, JOB
+  into sa_l, co_mm, dept_no, jo_b
+  from EMP
+  where EMPNO = emp_no;
+  p1(emp_no, sa_l, co_mm, dept_no, jo_b, dept_name);
+
+update EMP
+  set SAL = sa_l
+  where EMPNO = emp_no;
+  
+  DBMS_OUTPUT.PUT_LINE('Department Name: ' || dept_name);
+  DBMS_OUTPUT.PUT_LINE('New Salary: ' || sa_l);
+exception
+ when no_data_found then
+    DBMS_OUTPUT.PUT_LINE('Invalid Employee Number');
+end;
+
+
+
+#Q-3:
+
+create table DEPT (  
+    DNAME varchar2(11) constraint nn_noNme not NULL,  
+    DEPTNO number(3) constraint pk_dept primary key,  
+    LOC varchar2(11)  
+)
+
+
+
+
+create table EMP (  
+    ENAME varchar2(11) constraint nn_Nme not NULL,  
+    EMPNO number(3) constraint pk_empn primary key,  
+    JOB varchar2(11),  
+    MGR number(4),  
+    HIREDATE date,  
+    SAL number(6),  
+    COMM number(5),  
+    DEPTNO number(3),  
+    constraint fk_deptn foreign key (DEPTNO) references DEPT(DEPTNO)  
+) 
+insert into DEPT values ('abc',1,'a')
+insert into EMP values ('ac',11,'m',null,null,1000,100,1)
+insert into EMP values ('acb',18,'m',null,null,1000,100,1)
+    
+
+
+declare 
+ emp_no  number(3);
+ dept_no  number(3);
+begin
+emp_no:=11;
+dept_no:=1;
+EMPLOYEE.p1(emp_no,dept_no);
+end;
+
+
+
+create or replace  package EMPLOYEE
+ is
+    
+    title Constant varchar2(22) := 'TOTAL EMPLOYEES';
+    function f1(
+ empno2 in number,
+ deptno2 in number   
+) return boolean;
+
+
+     procedure p1(
+    empno1 in number,
+    deptno1 in  number
+);
+    
+end EMPLOYEE;
+
+create or replace package body EMPLOYEE is
+
+ function f1(
+ empno2 in number,
+ deptno2 in number   
+)
+    return boolean
+is
+    dno number(3);
+begin
+    select DEPTNO into dno from EMP where empno=empno2;
+    if(dno=deptno2) then  
+return true;
+        else 
+           return false;
+   end if;
+end f1;
+
+    
+ procedure p1(
+    empno1 in number,
+    deptno1 in  number
+)
+is
+    temp number(3);
+    temp1 boolean:=true;
+    temp2 boolean;
+begin 
+temp2:=f1(empno1,deptno1);
+select count(*) into temp from EMP 
+where deptno=deptno1;
+if(temp1=temp2) then
+    dbms_output.put_line('TOTAL NO OF EMPLOYEES ' || temp );
+else 
+    temp:=NULL;
+end if;
+end p1;
+
+end EMPLOYEE;

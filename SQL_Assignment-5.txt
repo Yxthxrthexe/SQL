@@ -1,0 +1,151 @@
+#Q-1:
+create Table CANDIDATE (
+    SEAT_NO number(3),
+    FORM_NO number(3),
+    NAME varchar2(10) constraint nn_nme not NULL,
+    CATEGORY number(2),
+    PERCENTAGE number(3)
+)
+
+    
+declare 
+cursor c1 is select * from CANDIDATE
+    order by CATEGORY ,PERCENTAGE DESC; 
+RANK number;
+r1 c1%rowtype; 
+begin 
+for r1 in c1 loop
+   
+select count(*) + 1 into RANK
+    from CANDIDATE
+    where CATEGORY = r1.CATEGORY AND PERCENTAGE > r1.PERCENTAGE;
+r1.SEAT_NO := '111' || r1.CATEGORY || LPAD(RANK, 4, '0');
+update CANDIDATE
+    set SEAT_NO = r1.SEAT_NO
+    where FORM_NO = r1.FORM_NO;
+  end loop;
+  commit;
+end;
+
+
+#Q2:
+
+ create table STUDENT (   
+    ROLLNO number(3) constraint pk_rno primary key,   
+    NAME varchar2(10),   
+    MRKS1 number(3) constraint ck_m1 check(MRKS1<100),   
+    MRKS2 number(3) constraint ck_m2 check(MRKS2<100),   
+    MRKS3 number(3) constraint ck_m3 check(MRKS3<100),   
+    PERCENTAGE number(3)   
+) 
+
+
+insert into STUDENT values(11,'RAJESH',47,69,44,'')
+
+
+
+
+insert into STUDENT values(12,'RAJ',34,70,45,'')
+
+
+insert into STUDENT values(13,'RAJIV',66,91,29,'')
+
+declare  
+  cursor c1 is select * from STUDENT;  
+  prcnt number(3);  
+  r1 c1%rowtype;  
+  max1 number(3):=0; 
+  max2 number(3):=0; 
+  max3 number(3):=0; 
+ student1 varchar2(11); 
+ student2 varchar2(11); 
+ student3 varchar2(11); 
+begin  
+  for r1 in c1 loop  
+   
+    if (r1.MRKS1 >= 40 and r1.MRKS2 >= 40 and r1.MRKS3 >= 40) then  
+       prcnt := (r1.MRKS1 + r1.MRKS2 + r1.MRKS3) * 100 / 300;  
+       update STUDENT set PERCENTAGE=prcnt where ROLLNO=r1.ROLLNO;  
+        DBMS_OUTPUT.PUT_LINE('STUDENT ' || r1.NAME || ' IS PASSED IN ALL SUBJECTS AND PERCENTAGE EQUALS ' || prcnt);  
+        
+    else  
+       
+         prcnt := (r1.MRKS1 + r1.MRKS2 + r1.MRKS3) * 100 / 300;  
+        update STUDENT set PERCENTAGE=prcnt where ROLLNO=r1.ROLLNO;  
+        DBMS_OUTPUT.PUT_LINE('STUDENT ' || r1.NAME || ' IS NOT PASSED IN ALL SUBJECTS AND PERCENTAGE EQUALS ' || prcnt);  
+    end if;  
+    if (max1<=r1.MRKS1) then 
+        max1:=r1.MRKS1; 
+        student1:=r1.NAME;
+    end if; 
+    if (max2<=r1.MRKS2) then 
+        max2:=r1.MRKS2; 
+        student2:=r1.NAME;
+    end if; 
+    if (max3<=r1.MRKS3) then 
+        max3:=r1.MRKS3; 
+        student3:=r1.NAME;
+    end if; 
+      
+  end loop;  
+      DBMS_OUTPUT.PUT_LINE('STUDENT ' || student1 || ' HAS SCORED MAX MARKS1 '|| max1); 
+      DBMS_OUTPUT.PUT_LINE('STUDENT ' || student2 || ' HAS SCORED MAX MARKS2 '|| max2); 
+      DBMS_OUTPUT.PUT_LINE('STUDENT ' || student3 || ' HAS SCORED MAX MARKS3 '|| max3); 
+end;
+
+#Q3:
+declare 
+cursor c1 is select c.*,tt.TID,tt.TCID, tt.SCORE  
+    from CANDIDATE c,TEST_TAKEN tt where c.CID = tt.CID; 
+r1 c1%rowtype; 
+T_ID TEST_TAKEN.TID%type; 
+T_CID TEST_TAKEN.TCID%type; 
+AVRG TEST_TAKEN.
+
+SCORE%type; 
+ 
+begin 
+T_ID := 2; T_CID := 23; 
+ 
+select avg(SCORE) into AVRG from TEST_TAKEN where TID = T_ID and tcid = T_CID; 
+ 
+dbms_output.put_line('average for given exam is '|| AVRG); 
+ 
+ 
+ 
+for r1 in c1  
+loop 
+ 
+	if r1.TID = T_ID and r1.TCID = T_CID and r1.SCORE > AVRG  
+    then dbms_output.put_line (r1.CNAME || ' scored '||r1.SCORE ||' in given test.'); 
+	end if; 
+     
+end loop; 
+ 
+end;
+
+
+
+#Q4:
+declare 
+cursor c1 is select tt.*,t.TNAME  
+    from TEST_TAKEN tt,TEST t where t.TID= tt.TID; 
+r1 c1%rowtype; 
+C_ID r1.CID%type; 
+MAXI r1.SCORE%type; 
+ 
+begin 
+ 
+C_ID := 11; 
+dbms_output.put_line('this candidate has appeared for following tests :'); 
+ 
+for r1 in c1 
+loop 
+if r1.CID = C_ID then 
+		select max(SCORE) into MAXI from TEST_TAKEN where TID = r1.TID; 
+		dbms_output.put_line('Appeared for '||r1.TNAME ||' and scored '||r1.SCORE|| ', maximum for this test was ' || MAXI); 
+end if; 
+ 
+end loop; 
+ 
+end;

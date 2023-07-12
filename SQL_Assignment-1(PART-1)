@@ -1,0 +1,134 @@
+create Table TEAM_MASTER   
+(  
+    TEAM_ID number(2) constraint pk_TEAM primary key,  
+    TEAM_NAME varchar2(20) constraint nn_Name not null  
+)
+
+
+create Table PLAYER  
+(  
+    PID number (4) ,  
+    PNAME varchar2(20) constraint nn_Nam not null,  
+    PBIRTHDATE date,  
+    TEAM_ID number(2),  
+     constraint pk_pd primary key(TEAM_ID, PID),  
+     constraint fk_TEAM foreign key (TEAM_ID)  references TEAM_MASTER (TEAM_ID)  
+)
+
+
+create Table BALLING   
+(  
+    TEAM_ID number(2),  
+    B_ID number(10),  
+    OVERS number(2),  
+    MADIEN number(2),  
+    RUNS_GIVEN number(3),  
+    WICKET_TAKEN number(3),  
+    constraint pk_BALL primary key(TEAM_ID, B_ID),  
+    constraint fk_BALL foreign key (TEAM_ID,B_ID)  references PLAYER (TEAM_ID,PID)  
+)
+
+
+create Table SCORE   
+(  
+    TEAM_ID number(2),  
+    PID number(4),  
+    RUN_MADE number (3) constraint ck_runmade check(RUN_MADE<350),  
+    OUT_TYPE varchar2(10) constraint ck_outtype check(OUT_TYPE in ('CATCH', 'RUNOUT', 'BOLT', 'STUMPED OUT')),  
+    B_ID number(10),  
+    BTEAM_ID number (10),  
+    constraint pk_balll primary key(TEAM_ID, PID),  
+    constraint fk_Teamz foreign key (TEAM_ID,PID)  references PLAYER (TEAM_ID,PID)  
+      
+)
+
+
+insert into TEAM_MASTER values(11,'PAKISTAN')
+
+insert into TEAM_MASTER values(12,'INDIA')
+
+insert into TEAM_MASTER values(13,'BANGLADESH')
+
+insert into PLAYER values(18,'VIRAT KOHLI','7-NOV-1991',12)
+
+insert into PLAYER values(7,'DHONI','30-AUG-1976',12)
+
+insert into PLAYER values(33,'ROHIT','1-Oct-1999',12)
+
+insert into PLAYER values(23,'SHOAB ALI','14-Feb-1999',11)
+
+insert into PLAYER values(72,'OMAR AKMAL','19-Oct-1971',11)
+
+insert into PLAYER values(29,'ZAMAN','21-Dec-1992',11)
+
+insert into PLAYER values(21,'SHAKIB','13-AUG-2001',13)
+
+insert into PLAYER values(23,' ALI','19-SEP-1974',13)
+
+insert into PLAYER values(38,'MUSTAFIZUR','26-DEC-1992',13)
+
+insert into BALLING values (11,72,3,0,34,2)
+
+insert into BALLING values (11,23,5,1,41,3)
+
+insert into BALLING values (12,7,4,0,28,4)
+
+insert into BALLING values (12,33,4,1,42,4)
+
+insert into BALLING values (13,21,4,0,28,4)
+
+insert into BALLING values (13,38,4,2,20,3)
+
+insert into SCORE values (11,29,45,'','',11)
+
+insert into SCORE values (11,23,41,'CATCH',23,11)
+
+insert into SCORE values (11,72,4,'',72,11)
+
+insert into SCORE values (12,7,49,'',7,12)
+
+insert into SCORE values (12,18,11,'BOLT','',12)
+
+insert into SCORE values (12,33,52,'',33,12)
+
+insert into SCORE values (13,21,29,'',21,13)
+
+insert into SCORE values (13,23,39,'','',13)
+
+select *from BALLING 
+where WICKET_TAKEN=( select max(WICKET_TAKEN) FROM BALLING)
+
+select *from PLAYER 
+where to_char(PBIRTHDATE, 'mon')='Oct' and 
+PID in(select PID from SCORE 
+where RUN_MADE>25);
+
+select *from SCORE
+where RUN_MADE>25
+
+select *from BALLING
+where MADIEN <=3
+
+select RUNS_GIVEN , B_ID, TEAM_ID from BALLING
+
+select TEAM_ID,PID, OUT_TYPE from SCORE
+ order by TEAM_ID, PID,OUT_TYPE;
+
+select TEAM_ID , PID from SCORE 
+where PID = B_ID
+order by TEAM_ID
+
+SELECT *
+FROM PLAYER
+WHERE DATE_DIFF(CURRENT_DATE(), PBIRTHDATE, YEAR) > 25
+
+SELECT DISTINCT P.PNAME
+FROM PLAYER P
+INNER JOIN BALLING B ON P.PID = B.B_ID
+INNER JOIN SCORE S ON B.B_ID = S.PID AND B.T
+
+ 
+ create or replace view vtemp1 as 
+ select TEAM_ID, PID,RUN_MADE,OUT_TYPE , B_ID  from SCORE
+ with read only
+

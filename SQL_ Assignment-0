@@ -1,0 +1,105 @@
+create table EMP   
+(   
+    empno number(20) constraint pk_empno primary key,   
+    ename varchar2(23) constraint nn_ename not null,   
+    job varchar2(5),   
+    mgr number(3)   
+)
+
+alter table EMP add HIREDATE date
+
+alter table EMP add SAL number(7,2) constraint ck_SAL check(SAL>0)
+
+alter table EMP add COMM number(7,2)
+
+create Table DEPT 
+(  
+    DEPTNO number(2) constraint pk_DEPTNO primary key,  
+    DNAME varchar2(50) constraint uk_DNAME unique,  
+    LOC varchar2(50) constraint nn_LOC not null  
+)
+
+alter table EMP add deptno number (2) constraint fk_DEPTNO references DEPT (DEPTNO) on delete cascade
+
+/** 1) COMPLETED /**
+
+alter table EMP drop column COMM 
+
+alter table EMP drop column JOB 
+
+alter table EMP add PINCODE varchar2(2) 
+
+alter table EMP modify PINCODE number(5) 
+
+/** 2) COMPLETED /**
+
+alter table EMP drop constraint ck_SAL 
+
+alter table EMP  add constraint ck_SAL check(SAL>5000) 
+
+alter table EMP  add constraint ck_MGR check(MGR>0) 
+
+alter table EMP  disable constraint ck_MGR  
+
+alter table EMP  enable constraint ck_MGR  
+
+/** 3) COMPLETED /**
+
+Rename EMP to EMPLOYEE 
+
+Rename DEPT to DEPARTMENT 
+
+Truncate table Employee
+
+Drop table Employee
+
+Truncate table Department
+
+Drop table Department
+
+/** 4) COMPLETED /**
+
+insert into Department values(12,'SCIENCE DEPT','BARODA');
+
+insert into Department values(13,'PHYSICS DEPT','AHEMDABAD');
+
+insert into Employee values(4,'RAHUL',31,'07-FEB-2023',6799,3,3961);
+
+insert into Employee values(2,'VISHAL',23,'05-FEB-2023',9876,13,3961);
+
+insert into Employee values(3,'YATHARTH',27,'03-FEB-2023',6354,14,4563);
+
+UPDATE Employee set SAL =SAL + 1000 WHERE upper(ename)='VISHAL' ;
+
+UPDATE Employee SET SAL =NULL WHERE DEPTNO =2;
+
+DELETE FROM Employee WHERE SAL>7000;
+
+DELETE FROM Employee WHERE MGR<30;
+
+UPDATE Department set DEPTNO =3 WHERE upper(DNAME)='SCIENCE DEPT' ;
+
+/** 5) COMPLETED /**
+
+select *from Employee 
+where upper (ename) not like '%I'
+and upper (ename) not like '%A';
+
+select *from Employee 
+where length(ename)=8;
+
+select *from Employee
+where SAL>6500 and SAL<7000;
+
+select *from Employee
+where DEPTNO>13 and DEPTNO<16;
+
+select empno,ename,SAL
+from Employee
+order by SAL desc;
+
+select empno, ename,SAL,DEPTNO
+from Employee
+order by DEPTNO,SAL ;
+
+

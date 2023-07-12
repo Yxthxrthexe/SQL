@@ -1,0 +1,89 @@
+#Q-1:
+
+
+declare
+i number :=2;
+c number :=0;
+bool boolean;
+begin
+while c<10
+loop
+bool :=true;
+for j in 2..(i-1) loop
+if mod(i,j)=0 then
+bool:=false;
+exit;
+end if;
+end loop;
+if bool then
+dbms_output.put_line(i);
+c:=c+1;
+end if;
+i:=i+1;
+end loop;
+end;
+
+#Q-2:
+
+DECLARE
+    stk varchar2(10) := 'MADAM';
+    l varchar2(20);
+    temp varchar2(10);
+Begin
+    For i in reverse 1..length(stk) loop
+        l := Substr(stk, i, 1);
+
+        temp := temp||''||l;
+    end loop;
+    if temp = stk then
+      dbms_output.Put_line(temp
+                           ||''
+                           ||' is palindrome');
+    else
+      dbms_output.Put_line(temp
+                           ||''
+                           ||' is not palindrome');
+    end if;
+end;
+
+#Q-3:
+
+declare
+n emp.empno %type;
+r1 emp% rowtype;
+begin
+select * into r1 from emp where empno=n ;
+if(upper(r1.job) in('MANAGER','ANALYST')) then
+r1.sal :=1.5*r1.sal;
+else
+r1.sal :=0.88*r1.sal;
+end if;
+update emp
+set sal=r1.sal where empno = n;
+commit;
+exception
+    when no_data_found then
+    dbms_output.put_line('Employee doesnt exist!!');
+    when too_many_rows then
+        dbms_output.put_line('Mupltiple records with thier name');
+end;
+
+
+#Q-4:
+
+declare
+
+dno dept.deptno%type;
+msal emp.sal%type;
+emps number(3);
+
+begin
+dno:=10;
+select max(sal), count(*) into msal, emps from emp
+where deptno=dno;
+dbms_output.put_line('Maximum salary of deptno no:' || dno || 'is' || msal || 'and total employees:' || emps);
+
+exception
+when no_data_found then
+dbms_output.put_line('No employee in dept:' || dno);
+end;

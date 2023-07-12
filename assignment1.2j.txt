@@ -1,0 +1,157 @@
+create table candidate(
+  CID number(3) constraint pk_cand primary key,
+  Cname varchar2(20) constraint nn_name not null,
+  CAddress varchar2(40),
+  C_birth_dt date
+);
+
+create table Test(
+  Tid number(4) constraint pk_t primary key,
+  Tname varchar2(15) constraint nn_t not null,
+  TOT_marks number(3) constraint nn_total not null,
+  Pass_marks number(3) constraint nn_passm not null
+);
+
+create table test_centre(
+  TCID number(6) constraint pk_tct primary key,
+  Location varchar2(20) constraint nn_loc not null,
+  MGR number(6) constraint nn_mgr not null,
+  capacity number(4) constraint nn_cap not null
+);
+
+create table Test_Taken(
+  CID number(3),
+  TID number(4),
+  TCID number(6),
+  Test_dt date constraint t_date not null,
+  score number(3),
+  constraint pk_test_taken primary key(CID,TID,TCID),
+  constraint fk_Cand foreign key (CID) references Candidate(CID),
+  constraint fk_cent foreign key (TCID) references Test_centre(TCID),
+  constraint fk_test foreign key (TID) references Test(TID)
+);
+
+insert into candidate values (110,'Rahul','suraj nagar','10-oct-1992');
+insert into candidate values (111,'Suraj','Raipur','12-sep-1995');
+insert into candidate values (112,'Peter','Thane','23-jul-1994');
+insert into candidate values (113,'Vinit','Udai nagar','20-feb-1997');
+insert into candidate values (114,'Laxmi','Sitapur','24-aug-1995');
+insert into candidate values (115,'Rohan','Janak Puri','30-dec-1996');
+insert into candidate values (116,'Vijay','Neel Kanth society','17-oct-1994');
+insert into candidate values (117,'Nisha','Ram nagar','15-mar-1998');
+insert into candidate values (118,'Jeet','yogeshvar nagar','17-jul-1994');
+insert into candidate values (119,'Mansi','Gaytri society','04-apr-1998');
+
+select * from candidate;
+
+insert into Test values(3102,'NEET',720,320);
+insert into Test values(3103,'JEE-Mains',300,110);
+insert into Test values(3145,'GUJCET',120,45);
+insert into Test values(3132,'KVPY',400,180);
+insert into Test values(3108,'GATE',100,30);
+
+select * from Test
+
+insert into Test_Centre values(310,'Bangalore',120032,2000);
+insert into Test_Centre values(311,'Bombay',120042,2200);
+insert into Test_Centre values(322,'Ahemdabad',120022,1500);
+insert into Test_Centre values(314,'Delhi',121212,1900);
+
+select * from Test_centre
+
+
+insert into Test_taken values(112,3103,314,'12-jul-2020',210);
+insert into Test_taken values(113,3102,310,'12-feb-2021',403);
+insert into Test_taken values(112,3102,310,'12-feb-2021',237);
+insert into Test_taken values(119,3102,310,'12-feb-2021',512);
+insert into Test_taken values(114,3102,310,'12-feb-2021',345);
+insert into Test_taken values(117,3145,322,'22-mar-2021',89);
+insert into Test_taken values(116,3145,322,'22-mar-2021',34);
+insert into Test_taken values(119,3145,322,'22-mar-2021',102);
+insert into Test_taken values(117,3103,322,'25-jun-2022',89);
+insert into Test_taken values(116,3103,322,'25-jun-2022',34);
+insert into Test_taken values(119,3103,322,'25-jun-2022',102);
+insert into Test_taken values(113,3103,322,'22-mar-2021',57);
+insert into Test_taken values(115,3145,322,'22-mar-2021',67);
+insert into Test_taken values(116,3103,314,'12-jul-2020',112);
+insert into Test_taken values(119,3103,314,'12-jul-2020',237);
+insert into Test_taken values(118,3102,310,'12-feb-2021',237);
+
+select * from test_taken
+
+delete from test_taken where cid in (117,116,119) and tid = 3103
+
+-- 2.
+
+select te.tname,tc.tcid,count(tt.cid) from test te,test_centre tc,test_taken tt where tt.tid = te.tid and 
+tt.tcid = tc.tcid group by te.tname,tc.tcid order by te.tname;
+
+-- select tid as "test",tcid as "centre",count(cid) as "attendance" from test_taken group by tid,tcid;
+
+-- 3.
+
+select t1.cid,c1.cname,t1.score from candidate c1,test_taken t1
+where c1.cid = t1.cid and upper(c1.cname) <>'PETER'
+and t1.score = (select score from test_taken
+    			where cid = (select cid from candidate where upper(cname)='PETER')
+    			and tcid = (select tcid from test_centre where upper(location)='BANGALORE' ));
+
+-- 4.
+
+select * from test_centre where tcid not in(select tcid from test_taken);
+
+
+-- 5.
+
+select * from candidate where
+cid in (select cid from test_taken tt
+       where score < (select pass_marks from test t1 where t1.tid = tt.tid));
+
+-- 6.
+
+select t.*,tc.* from  test t,test_centre tc
+where (t.tid,tc.tcid) 
+    	in (select tt.tid,tt.tcid from test_taken tt where
+    		test_dt between to_date('03-03-2021','dd-mm-yyyy') and to_date('26-07-2022','dd-mm-yyyy'));
+
+-- 7.
+
+select count(*) from test_taken tt where 
+tt.tid = (select tid from test t1 where upper(t1.tname) = 'GUJCET') and
+tt.tcid = (select tcid from test_centre tc where upper(tc.location)='AHEMDABAD') and
+to_char(test_dt,'mon') = 'mar';
+
+
+-- 8.
+
+select * from candidate c1 where 
+cid in (select cid from test_taken tt where to_char(tt.test_dt,'mon')=to_char(c1.c_birth_dt,'mon'));
+
+
+-- 9.
+
+select c.*,t.tname as "Test taken",tt.score as "Score" from candidate c,test t,test_taken tt
+where c.cid = tt.cid and t.tid = tt.tid and 
+(tt.score,tt.tid,tt.tcid) in (select max(t1.score),t1.tid,t1.tcid from test_taken t1 group by t1.tid,t1.tcid);
+
+-- 10.
+
+create or replace view v1 as 
+select c.*,t.*,tt.score from candidate c,test t,test_taken tt where 
+c.cid=tt.cid and t.tid = tt.tid with read only;
+
+select * from v1;
+
+
+
+declare
+n:= &n;
+begin
+select sal into r1 from emp
+where empno=n;
+if upper(job)='MANAGER'
+then
+r1.sal=r1.sal*1.15;
+else
+exit
+end;

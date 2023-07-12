@@ -1,0 +1,166 @@
+#Q-1(a):
+create Table STUDENT (
+    SEATNO varchar(5) constraint pk_sitno primary key,
+    NAME varchar2(11),
+    MARKS1 number(3) constraint ck_mk1 check(MARKS1>0),
+    MARKS2 number(3) constraint ck_mk2 check(MARKS2>0),
+    MARKS3 number(3) constraint ck_mk3 check(MARKS3>0)
+)
+    
+drop table STUDENT;
+
+create Table RESULT(
+    SEATNO varchar2(5) constraint pk_stno primary key,
+    AVERAGE number(3) constraint ck_avg check(AVERAGE>0),
+    constraint fk_setno foreign key (SEATNO) references STUDENT(SEATNO)   
+)
+
+create or replace trigger t12
+after insert or update on STUDENT for each row
+declare
+    AVG RESULT.AVERAGE%type;
+begin
+    select AVerage into AVG from RESULT where  SEATNO= : new.SEATNO;
+   if (:new.MARKS1<:new.MARKS2 and :new.MARKS1<:new.MARKS3) then AVG := :new.MARKS2+:new.MARKS3/2;
+   end if;
+   if (:new.MARKS2<:new.MARKS1 and :new.MARKS2<:new.MARKS3) then AVG := :new.MARKS1+:new.MARKS3/2;
+   end if;
+   if (:new.MARKS3<:new.MARKS2 and :new.MARKS3<:new.MARKS1) then AVG := :new.MARKS2+:new.MARKS1/2;
+   end if;
+   insert into RESULT values(:new.SEATNO,AVG);
+end t12;
+
+#Q-1(b):
+
+create or replace trigger t22
+before insert
+on student for each row
+declare
+	len number(2);
+	no_check number(2);
+begin
+    len:=length(:new.seatno);
+	no_check:=ASCII(substr(:new.seatno,len,1));
+    if :new.name in ('Tom','Dick','Harry') then
+    	raise_application_error(-20000,'No DML operations are allowed for this student!!!');
+    end if;
+	if substr(:new.seatno,1en,1)!='I' then
+        :new.seatno:='I'||:new.seatno;
+	end if;
+	len:=length(:new.seatno);
+	if len>5 or no_check between 48 and 57 then
+        raise_application_error(-20001,'Invalid seatno Value!');
+	end if;
+	
+end;
+
+
+#Q_2:
+create table MASTER (
+    MACCNO number(3) constraint pk_macno primary key,
+     NAME varchar2(11), 
+    BALANCE number(3)
+)
+
+
+create table TRANS (
+    tACCNO number(3) constraint pk_tacno primary key,
+     TNAME varchar2(11), 
+    TYPE varchar2(11),
+    AMOUNT number(3)
+)
+
+
+create table AUDIT1 (
+     ACCNO number(3) constraint pk_acno primary key,
+    TYPE varchar2(11),
+    USER_ID NUMBER(5),
+    SYS_DATE DATE,
+    AMOUNT number(3)
+)
+
+create or replace trigger t10 after
+insert or update or delete  on TRANS for each row
+    declare
+    bl MASTER.BALANCE%type;    
+begin
+    select balance into bl from master
+    where maccno=:new.taccno;
+  if sql%found then
+     if :new.type ='C' then
+    bl:= bl + :new.amount;
+elsif : new.type ='D' then
+    bl:= bl - :new.amount;
+end if;
+update MASTER set BALANCE= bl where MACCNO=:new.TACCNO;
+else
+ insert into master values(:new.taccno, :new.tname, :new.amount);
+ bl:=:new.amount;
+end if;
+insert into audit1 values(:new.TACCNO,:new.type,user,sysdate,:new.amount);
+insert into audit1 values(:new.TACCNO,'X',user,sysdate,bl);
+end;
+
+
+#Q-3:
+
+create Table STUDENT ( 
+    SEATNO number(3) constraint pk_sitno primary key, 
+    NAME varchar2(11), 
+    MARKS1 number(3) constraint ck_mk1 check(MARKS1>0), 
+    MARKS2 number(3) constraint ck_mk2 check(MARKS2>0), 
+    MARKS3 number(3) constraint ck_mk3 check(MARKS3>0) 
+)
+
+create Table RESULT( 
+    SEATNO number(3) constraint pk_stno primary key, 
+    AVERAGE number(3) constraint ck_avg check(AVERAGE>0), 
+    constraint fk_setno foreign key (SEATNO) references STUDENT(SEATNO)    
+)
+
+create table VTEMP(
+    SEATNO number (3) constraint pk_sno primary key, 
+    VDATE date,
+    ACTION varchar2(1),
+    constraint fk_stno foreign key (SEATNO) references STUDENT(SEATNO)    
+)
+
+create or replace view V1 (SEATNO,NAME,AVERAGE) as
+select s.SEATNO,s.NAME,r.AVERAGE from STUDENT s,RESULT r;
+
+
+
+create or replace trigger t1 instead of 
+insert or update or delete on v1 
+for each row
+begin
+    if inserting then
+ insert into VTEMP values (user,'I',sysdate);
+end if;
+    if deleting then
+ insert into VTEMP values (user,'U',sysdate);
+end if;
+    if updating then
+ insert into VTEMP values (user,'D',sysdate);
+end if;
+end t1;
+
+
+#Q-4:
+
+create table AUDITUSER(
+    usr  number(11), 
+    logdate date
+)
+
+create or replace trigger t2 after logon on schema
+begin
+insert into AUDITUSER values(user,sysdate);
+end t2;
+
+create or replace trigger t3 before logoff on schema
+begin
+insert into AUDITUSER values(user,sysdate);
+end t3;
+
+
